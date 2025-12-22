@@ -1,0 +1,11 @@
+student_id,first_name,last_name,email,attendance,assignment_score,quiz_score,time_spent,forum_posts,resources_viewed
+S1001,John,Doe,john.doe@university.edu,95.0,88.5,92.0,28.5,12,48
+S1002,Jane,Smith,jane.smith@university.edu,85.0,78.0,82.5,22.0,8,35
+S1003,Michael,Johnson,michael.j@university.edu,45.0,55.0,48.0,12.5,3,18
+S1004,Emily,Brown,emily.b@university.edu,98.0,94.0,96.0,32.0,15,52
+S1005,David,Wilson,david.w@university.edu,75.0,68.0,72.0,18.5,6,28
+S1006,Sarah,Davis,sarah.d@university.edu,60.0,62.0,58.0,15.0,4,22
+S1007,Robert,Taylor,robert.t@university.edu,92.0,85.0,89.0,26.0,10,42
+S1008,Jennifer,Anderson,jennifer.a@university.edu,40.0,48.0,52.0,10.0,2,15
+S1009,Thomas,Thomas,thomas.t@university.edu,100.0,96.0,98.0,35.0,18,55
+S1010,Lisa,Jackson,lisa.j@university.edu,55.0,58.0,61.0,14.0,5,25

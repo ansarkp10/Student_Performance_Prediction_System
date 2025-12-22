@@ -1,0 +1,215 @@
+{% extends 'performance_app/base.html' %}
+
+{% block title %}{{ student.first_name }} {{ student.last_name }} - Student Details{% endblock %}
+{% block header %}Student Details{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <!-- Student Profile Card -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5>Student Profile</h5>
+            </div>
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-user-circle fa-5x text-primary"></i>
+                </div>
+                <h4>{{ student.first_name }} {{ student.last_name }}</h4>
+                <p class="text-muted">{{ student.student_id }}</p>
+                
+                <div class="list-group list-group-flush text-start">
+                    <div class="list-group-item">
+                        <strong>Email:</strong> {{ student.email }}
+                    </div>
+                    <div class="list-group-item">
+                        <strong>Course:</strong> {{ student.course.course_name }}
+                    </div>
+                    <div class="list-group-item">
+                        <strong>Enrolled:</strong> {{ student.created_at|date:"M d, Y" }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Performance Card -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Performance Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <div class="performance-badge performance-{{ student.predicted_performance|default:'average' }} p-3">
+                        <h4 class="mb-0">{{ student.predicted_performance|default:"Not Predicted"|title }}</h4>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Risk Status:</strong>
+                    {% if student.is_at_risk %}
+                        <span class="risk-badge risk-yes">At Risk</span>
+                    {% else %}
+                        <span class="risk-badge risk-no">Safe</span>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Prediction Confidence:</strong>
+                    <div class="progress" style="height: 20px;">
+                        <div class="progress-bar bg-success" style="width: 85%">85%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <!-- Academic Metrics -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Academic Metrics</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3 mb-3">
+                        <div class="p-3 border rounded">
+                            <h2 class="text-primary">{{ student.attendance }}%</h2>
+                            <small>Attendance</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="p-3 border rounded">
+                            <h2 class="text-success">{{ student.assignment_score }}%</h2>
+                            <small>Assignments</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="p-3 border rounded">
+                            <h2 class="text-info">{{ student.quiz_score }}%</h2>
+                            <small>Quizzes</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="p-3 border rounded">
+                            <h2 class="text-warning">{{ student.time_spent }}h</h2>
+                            <small>Time Spent</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row text-center">
+                    <div class="col-md-6 mb-3">
+                        <div class="p-3 border rounded">
+                            <h2 class="text-purple">{{ student.forum_posts }}</h2>
+                            <small>Forum Posts</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="p-3 border rounded">
+                            <h2 class="text-orange">{{ student.resources_viewed }}</h2>
+                            <small>Resources Viewed</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Performance Charts -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Performance Analysis</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="studentChart" height="150"></canvas>
+            </div>
+        </div>
+        
+        <!-- Notes and Actions -->
+        <div class="card">
+            <div class="card-header">
+                <h5>Notes & Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>Notes:</strong>
+                    <p class="mt-2">{{ student.notes|default:"No notes available." }}</p>
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <button class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Edit Student
+                    </button>
+                    <button class="btn btn-warning">
+                        <i class="fas fa-comment"></i> Send Message
+                    </button>
+                    <button class="btn btn-info">
+                        <i class="fas fa-chart-line"></i> View Progress
+                    </button>
+                    <a href="{% url 'students_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to List
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Student Performance Chart
+const ctx = document.getElementById('studentChart').getContext('2d');
+const studentChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: ['Attendance', 'Assignments', 'Quizzes', 'Time Spent', 'Forum Posts', 'Resources'],
+        datasets: [{
+            label: 'Current Student',
+            data: [
+                {{ student.attendance }},
+                {{ student.assignment_score }},
+                {{ student.quiz_score }},
+                {{ student.time_spent }},
+                {{ student.forum_posts }},
+                {{ student.resources_viewed }}
+            ],
+            backgroundColor: [
+                '#3498db',
+                '#2ecc71',
+                '#9b59b6',
+                '#f1c40f',
+                '#e67e22',
+                '#e74c3c'
+            ],
+            borderColor: [
+                '#2980b9',
+                '#27ae60',
+                '#8e44ad',
+                '#f39c12',
+                '#d35400',
+                '#c0392b'
+            ],
+            borderWidth: 1
+        }, {
+            label: 'Class Average',
+            data: [85, 75, 72, 20, 8, 35],
+            backgroundColor: 'rgba(200, 200, 200, 0.5)',
+            borderColor: 'rgba(150, 150, 150, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 100
+            }
+        }
+    }
+});
+</script>
+
+<style>
+.text-purple { color: #9b59b6; }
+.text-orange { color: #e67e22; }
+</style>
+{% endblock %}

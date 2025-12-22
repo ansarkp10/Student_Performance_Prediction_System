@@ -1,0 +1,219 @@
+{% extends 'performance_app/base.html' %}
+
+{% block title %}View Predictions - Student Performance Prediction{% endblock %}
+{% block header %}Performance Predictions{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="stat-card bg-primary text-white">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <h3>{{ total_students }}</h3>
+                    <p>Total Students</p>
+                </div>
+                <i class="fas fa-users fa-2x"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card bg-success text-white">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <h3>{{ at_risk_count }}</h3>
+                    <p>At Risk Students</p>
+                </div>
+                <i class="fas fa-exclamation-triangle fa-2x"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card bg-warning text-white">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <h3>{% widthratio at_risk_count total_students 100 %}%</h3>
+                    <p>Risk Percentage</p>
+                </div>
+                <i class="fas fa-chart-pie fa-2x"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card bg-info text-white">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <h3>
+                        {% if performance_dist.Excellent %}
+                            {{ performance_dist.Excellent }}
+                        {% else %}
+                            0
+                        {% endif %}
+                    </h3>
+                    <p>Excellent Students</p>
+                </div>
+                <i class="fas fa-star fa-2x"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Performance Distribution -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Performance Distribution</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col">
+                        <div class="performance-badge performance-excellent d-inline-block p-3">
+                            <h4>{{ performance_dist.excellent|default:"0" }}</h4>
+                            <small>Excellent</small>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="performance-badge performance-good d-inline-block p-3">
+                            <h4>{{ performance_dist.good|default:"0" }}</h4>
+                            <small>Good</small>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="performance-badge performance-average d-inline-block p-3">
+                            <h4>{{ performance_dist.average|default:"0" }}</h4>
+                            <small>Average</small>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="performance-badge performance-poor d-inline-block p-3">
+                            <h4>{{ performance_dist.poor|default:"0" }}</h4>
+                            <small>Poor</small>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="performance-badge performance-at_risk d-inline-block p-3">
+                            <h4>{{ performance_dist.at_risk|default:"0" }}</h4>
+                            <small>At Risk</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Students Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5>Student Predictions</h5>
+                <a href="{% url 'predict_performance' %}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-sync-alt"></i> Refresh Predictions
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Student ID</th>
+                                <th>Name</th>
+                                <th>Course</th>
+                                <th>Attendance</th>
+                                <th>Assignments</th>
+                                <th>Quizzes</th>
+                                <th>Performance</th>
+                                <th>Risk Status</th>
+                                <th>Confidence</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in students %}
+                            <tr>
+                                <td>{{ student.student_id }}</td>
+                                <td>{{ student.first_name }} {{ student.last_name }}</td>
+                                <td>{{ student.course.course_name }}</td>
+                                <td>{{ student.attendance }}%</td>
+                                <td>{{ student.assignment_score }}%</td>
+                                <td>{{ student.quiz_score }}%</td>
+                                <td>
+                                    {% if student.predicted_performance %}
+                                        <span class="performance-badge performance-{{ student.predicted_performance }}">
+                                            {{ student.predicted_performance|title }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">Not Predicted</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if student.is_at_risk %}
+                                        <span class="risk-badge risk-yes">At Risk</span>
+                                    {% else %}
+                                        <span class="risk-badge risk-no">Safe</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if student.predicted_performance %}
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar 
+                                                {% if student.predicted_performance == 'excellent' %}bg-success
+                                                {% elif student.predicted_performance == 'good' %}bg-info
+                                                {% elif student.predicted_performance == 'average' %}bg-warning
+                                                {% elif student.predicted_performance == 'poor' %}bg-orange
+                                                {% else %}bg-danger{% endif %}" 
+                                                style="width: 85%">
+                                                85%
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'student_detail' student.student_id %}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="10" class="text-center py-4">
+                                    <div class="text-muted">
+                                        <i class="fas fa-users-slash fa-3x mb-3"></i>
+                                        <h5>No students found</h5>
+                                        <p>Upload student data first or run predictions</p>
+                                        <a href="{% url 'upload_csv' %}" class="btn btn-primary">
+                                            <i class="fas fa-file-upload"></i> Upload CSV
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <strong>Legend:</strong>
+                        <span class="performance-badge performance-excellent ms-2">Excellent</span>
+                        <span class="performance-badge performance-good ms-2">Good</span>
+                        <span class="performance-badge performance-average ms-2">Average</span>
+                        <span class="performance-badge performance-poor ms-2">Poor</span>
+                        <span class="performance-badge performance-at_risk ms-2">At Risk</span>
+                    </div>
+                    <div>
+                        <button class="btn btn-sm btn-outline-success">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

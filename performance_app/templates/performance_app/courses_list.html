@@ -1,0 +1,78 @@
+{% extends 'performance_app/base.html' %}
+
+{% block title %}Courses - Student Performance Prediction{% endblock %}
+{% block header %}Courses Management{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5>All Courses</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Course Code</th>
+                                <th>Course Name</th>
+                                <th>Instructor</th>
+                                <th>Duration</th>
+                                <th>Students</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for course in courses %}
+                            <tr>
+                                <td><strong>{{ course.course_id }}</strong></td>
+                                <td>{{ course.course_name }}</td>
+                                <td>{{ course.instructor.username }}</td>
+                                <td>
+                                    {{ course.start_date|date:"M d" }} - {{ course.end_date|date:"M d, Y" }}
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary rounded-pill">
+                                        {{ course.students.count }}
+                                    </span>
+                                </td>
+                                <td>{{ course.created_at|date:"M d, Y" }}</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="#" class="btn btn-outline-primary" title="View">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="#" class="btn btn-outline-warning" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'students_list' %}?course={{ course.id }}" 
+                                           class="btn btn-outline-success" title="View Students">
+                                            <i class="fas fa-users"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center py-4">
+                                    <div class="text-muted">
+                                        <i class="fas fa-book fa-3x mb-3"></i>
+                                        <h5>No courses found</h5>
+                                        <p>Create your first course to start adding students</p>
+                                        <a href="{% url 'add_course' %}" class="btn btn-primary">
+                                            <i class="fas fa-plus"></i> Create Course
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

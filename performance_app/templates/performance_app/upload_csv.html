@@ -1,0 +1,413 @@
+{% extends 'performance_app/base.html' %}
+
+{% block title %}Upload CSV - Student Performance Prediction{% endblock %}
+{% block header %}Upload Student Data CSV{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-6">
+        <div class="card border-0 shadow-lg">
+            <div class="card-header bg-gradient-primary text-white py-3">
+                <div class="d-flex align-items-center">
+                    <div class="bg-white rounded-circle p-2 me-3">
+                        <i class="fas fa-file-csv text-primary fa-lg"></i>
+                    </div>
+                    <div>
+                        <h4 class="mb-0">Upload Student Data</h4>
+                        <small class="opacity-75">Upload CSV file containing student performance data</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-body p-4">
+                <div class="alert alert-info mb-4">
+                    <div class="d-flex">
+                        <i class="fas fa-info-circle fa-2x me-3 text-info"></i>
+                        <div>
+                            <h6 class="alert-heading mb-1">CSV Format Requirements</h6>
+                            <ul class="mb-0 ps-3">
+                                <li>Required columns: <code>student_id</code>, <code>first_name</code>, <code>last_name</code>, <code>email</code></li>
+                                <li>Optional columns: <code>attendance</code>, <code>assignment_score</code>, <code>quiz_score</code>, <code>time_spent</code></li>
+                                <li>File must be in .csv format with UTF-8 encoding</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    
+                    <!-- Course Selection -->
+                    <div class="mb-4">
+                        <label for="{{ form.course.id_for_label }}" class="form-label fw-bold">
+                            <i class="fas fa-book me-2 text-primary"></i>Select Course
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">
+                                <i class="fas fa-graduation-cap text-muted"></i>
+                            </span>
+                            {{ form.course }}
+                        </div>
+                        {% if form.course.errors %}
+                        <div class="text-danger small mt-1">
+                            {% for error in form.course.errors %}
+                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <small class="text-muted">Choose the course for which you're uploading student data</small>
+                    </div>
+                    
+                    <!-- File Upload -->
+                    <div class="mb-4">
+                        <label for="{{ form.file.id_for_label }}" class="form-label fw-bold">
+                            <i class="fas fa-file-upload me-2 text-primary"></i>Select CSV File
+                        </label>
+                        
+                        <div class="file-upload-container">
+                            <div class="file-upload-area border-2 border-dashed rounded-3 p-5 text-center"
+                                 id="fileUploadArea">
+                                <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                                <h5 class="mb-2">Drag & Drop your CSV file here</h5>
+                                <p class="text-muted mb-3">or click to browse</p>
+                                
+                                <div class="file-input-wrapper">
+                                    {{ form.file }}
+                                    <label for="{{ form.file.id_for_label }}" class="btn btn-primary">
+                                        <i class="fas fa-search me-2"></i>Browse Files
+                                    </label>
+                                </div>
+                                
+                                <small class="text-muted d-block mt-2">Maximum file size: 10MB</small>
+                            </div>
+                            
+                            <div class="file-preview mt-3 d-none" id="filePreview">
+                                <div class="alert alert-success d-flex align-items-center">
+                                    <i class="fas fa-check-circle fa-2x me-3 text-success"></i>
+                                    <div class="flex-grow-1">
+                                        <strong>File selected:</strong>
+                                        <span id="fileName"></span>
+                                    </div>
+                                    <button type="button" class="btn-close" id="removeFileBtn"></button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if form.file.errors %}
+                        <div class="text-danger small mt-2">
+                            {% for error in form.file.errors %}
+                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    
+                    <!-- Submit Buttons -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary me-md-2">
+                            <i class="fas fa-times me-1"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-lg px-4">
+                            <i class="fas fa-upload me-2"></i>Upload and Process
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Progress Bar (Initially Hidden) -->
+            <div class="card-footer bg-light border-top-0" id="progressSection" style="display: none;">
+                <div class="progress" style="height: 10px;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" 
+                         role="progressbar" style="width: 0%" id="uploadProgress">
+                    </div>
+                </div>
+                <div class="text-center mt-2" id="progressText">
+                    <small class="text-muted">Processing your file...</small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Stats -->
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-users fa-2x text-primary mb-2"></i>
+                        <h5 class="mb-1">{{ total_students|default:"0" }}</h5>
+                        <small class="text-muted">Total Students</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-book fa-2x text-success mb-2"></i>
+                        <h5 class="mb-1">{{ total_courses|default:"0" }}</h5>
+                        <small class="text-muted">Active Courses</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-file-import fa-2x text-warning mb-2"></i>
+                        <h5 class="mb-1">{{ upload_count|default:"0" }}</h5>
+                        <small class="text-muted">Previous Uploads</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.file-upload-container .file-upload-area {
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.file-upload-container .file-upload-area:hover {
+    background-color: #e9ecef;
+    border-color: #667eea;
+}
+
+.file-upload-container .file-upload-area.dragover {
+    background-color: rgba(102, 126, 234, 0.1);
+    border-color: #667eea;
+    border-style: solid;
+}
+
+.file-input-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.file-input-wrapper input[type="file"] {
+    position: absolute;
+    left: 0;
+    top: 0;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+.file-input-wrapper label {
+    cursor: pointer;
+    margin-bottom: 0;
+}
+
+.border-dashed {
+    border-style: dashed !important;
+}
+
+.border-2 {
+    border-width: 2px !important;
+}
+
+.card {
+    border-radius: 15px;
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+.progress {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    border-radius: 10px;
+}
+
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    padding: 10px 15px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+    transform: translateY(-2px);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 8px;
+    padding: 10px 25px;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.btn-outline-primary {
+    border-radius: 8px;
+    padding: 8px 20px;
+}
+
+.alert {
+    border-radius: 10px;
+    border: none;
+}
+
+.card-header {
+    border-radius: 15px 15px 0 0 !important;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.querySelector('input[type="file"]');
+    const fileUploadArea = document.getElementById('fileUploadArea');
+    const filePreview = document.getElementById('filePreview');
+    const fileName = document.getElementById('fileName');
+    const removeFileBtn = document.getElementById('removeFileBtn');
+    const downloadTemplateBtn = document.getElementById('downloadTemplateBtn');
+    const progressSection = document.getElementById('progressSection');
+    const uploadProgress = document.getElementById('uploadProgress');
+    const progressText = document.getElementById('progressText');
+    const form = document.querySelector('form');
+    
+    // File drag and drop functionality
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        fileUploadArea.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    ['dragenter', 'dragover'].forEach(eventName => {
+        fileUploadArea.addEventListener(eventName, highlight, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+        fileUploadArea.addEventListener(eventName, unhighlight, false);
+    });
+    
+    function highlight() {
+        fileUploadArea.classList.add('dragover');
+    }
+    
+    function unhighlight() {
+        fileUploadArea.classList.remove('dragover');
+    }
+    
+    // Handle file drop
+    fileUploadArea.addEventListener('drop', handleDrop, false);
+    
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        handleFiles(files);
+    }
+    
+    // Handle file selection via click
+    fileInput.addEventListener('change', function() {
+        handleFiles(this.files);
+    });
+    
+    // Handle file preview
+    function handleFiles(files) {
+        if (files.length > 0) {
+            const file = files[0];
+            
+            // Validate file type
+            if (!file.name.toLowerCase().endsWith('.csv')) {
+                alert('Please select a CSV file.');
+                return;
+            }
+            
+            // Validate file size (10MB max)
+            if (file.size > 10 * 1024 * 1024) {
+                alert('File size must be less than 10MB.');
+                return;
+            }
+            
+            // Show preview
+            fileName.textContent = file.name + ' (' + formatFileSize(file.size) + ')';
+            filePreview.classList.remove('d-none');
+        }
+    }
+    
+    // Format file size
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    // Remove file
+    removeFileBtn.addEventListener('click', function() {
+        fileInput.value = '';
+        filePreview.classList.add('d-none');
+    });
+    
+    // Download template (placeholder functionality)
+    downloadTemplateBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        alert('Sample template download functionality would be implemented here.');
+        // In production, you would link to an actual CSV file
+        // window.location.href = '/media/sample_template.csv';
+    });
+    
+    // Form submission with progress simulation
+    form.addEventListener('submit', function(e) {
+        if (!fileInput.value) {
+            e.preventDefault();
+            alert('Please select a file to upload.');
+            return;
+        }
+        
+        // Show progress bar
+        progressSection.style.display = 'block';
+        
+        // Simulate progress
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += 10;
+            uploadProgress.style.width = progress + '%';
+            
+            if (progress <= 30) {
+                progressText.innerHTML = '<small class="text-muted">Uploading file...</small>';
+            } else if (progress <= 60) {
+                progressText.innerHTML = '<small class="text-muted">Validating data...</small>';
+            } else if (progress <= 90) {
+                progressText.innerHTML = '<small class="text-muted">Processing records...</small>';
+            } else {
+                progressText.innerHTML = '<small class="text-success"><i class="fas fa-check me-1"></i>Upload complete!</small>';
+                clearInterval(interval);
+            }
+        }, 200);
+        
+        // Stop simulation after form submission
+        setTimeout(() => {
+            clearInterval(interval);
+        }, 3000);
+    });
+    
+    // Add Bootstrap validation
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+    }, false);
+});
+</script>
+{% endblock %}
