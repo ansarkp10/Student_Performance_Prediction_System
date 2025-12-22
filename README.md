@@ -1,5 +1,7 @@
 # 🎓 Student Performance Prediction System (EduPredict)
 
+![App Screenshot](https://github.com/ansarkp10/Student_Performance_Prediction_System/blob/main/USER_UI.png)
+
 ## 📊 Overview
 A Django-based web application that uses Machine Learning to predict student performance in online courses. The system helps educators identify at-risk students early and implement timely interventions.
 
