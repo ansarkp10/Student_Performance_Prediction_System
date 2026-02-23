@@ -1,0 +1,319 @@
+{% extends 'performance_app/base.html' %}
+
+{% block title %}Courses - Student Performance Prediction{% endblock %}
+{% block header %}Courses Management{% endblock %}
+
+{% block content %}
+<!-- Statistics Cards -->
+{% if user_profile.role == 'admin' and statistics %}
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0 bg-primary bg-opacity-10 p-3 rounded-3">
+                        <i class="fas fa-book fa-2x text-primary"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="text-muted mb-1">Total Courses</h6>
+                        <h3 class="mb-0 fw-bold">{{ statistics.total_courses }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0 bg-success bg-opacity-10 p-3 rounded-3">
+                        <i class="fas fa-play-circle fa-2x text-success"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="text-muted mb-1">Active Courses</h6>
+                        <h3 class="mb-0 fw-bold">{{ statistics.active_courses }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0 bg-info bg-opacity-10 p-3 rounded-3">
+                        <i class="fas fa-users fa-2x text-info"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="text-muted mb-1">Total Students</h6>
+                        <h3 class="mb-0 fw-bold">{{ statistics.total_students }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0 bg-warning bg-opacity-10 p-3 rounded-3">
+                        <i class="fas fa-chalkboard-teacher fa-2x text-warning"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="text-muted mb-1">Instructors</h6>
+                        <h3 class="mb-0 fw-bold">{{ statistics.unique_instructors }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Instructor Statistics Cards -->
+{% if user_profile.role == 'instructor' %}
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0 bg-primary bg-opacity-10 p-3 rounded-3">
+                        <i class="fas fa-book fa-2x text-primary"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="text-muted mb-1">Your Courses</h6>
+                        <h3 class="mb-0 fw-bold">{{ courses.count }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0 bg-success bg-opacity-10 p-3 rounded-3">
+                        <i class="fas fa-users fa-2x text-success"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="text-muted mb-1">Total Students</h6>
+                        <h3 class="mb-0 fw-bold">{{ total_students_count|default:0 }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0 bg-warning bg-opacity-10 p-3 rounded-3">
+                        <i class="fas fa-exclamation-triangle fa-2x text-warning"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="text-muted mb-1">At Risk Students</h6>
+                        <h3 class="mb-0 fw-bold">{{ at_risk_count|default:0 }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Courses Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="fas fa-list me-2 text-primary"></i>
+                        All Courses
+                    </h5>
+                    <div>
+                        {% if user_profile.role == 'admin' %}
+                        <a href="{% url 'add_course' %}" class="btn btn-success btn-sm">
+                            <i class="fas fa-plus-circle"></i> Add New Course
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4">Course Code</th>
+                                <th>Course Name</th>
+                                <th>Instructor</th>
+                                <th>Duration</th>
+                                <th class="text-center">Students</th>
+                                <th>Created</th>
+                                <th class="text-center pe-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for course in courses %}
+                            <tr>
+                                <td class="ps-4">
+                                    <span class="badge bg-dark px-3 py-2">{{ course.course_id }}</span>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold">{{ course.course_name }}</div>
+                                    {% if course.description %}
+                                    <small class="text-muted">{{ course.description|truncatechars:30 }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-circle bg-primary text-white me-2">
+                                            {{ course.instructor.first_name|first|default:'?' }}{{ course.instructor.last_name|first|default:'' }}
+                                        </div>
+                                        <div>
+                                            <div class="fw-semibold">
+                                                {% with profile=course.instructor.userprofile %}
+                                                    {% if profile.full_name %}
+                                                        {{ profile.full_name }}
+                                                    {% elif course.instructor.first_name %}
+                                                        {{ course.instructor.first_name }} {{ course.instructor.last_name }}
+                                                    {% else %}
+                                                        {{ course.instructor.username }}
+                                                    {% endif %}
+                                                {% endwith %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <i class="far fa-calendar-alt text-muted me-1"></i>
+                                    {{ course.start_date|date:"M d, Y" }} - {{ course.end_date|date:"M d, Y" }}
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge {% if course.student_count > 0 %}bg-primary{% else %}bg-secondary{% endif %} rounded-pill px-3 py-2">
+                                        <i class="fas fa-user-graduate me-1"></i>
+                                        {{ course.student_count }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <small>
+                                        <i class="far fa-clock text-muted me-1"></i>
+                                        {{ course.created_at|date:"M d, Y" }}
+                                    </small>
+                                </td>
+                                <td class="text-center pe-4">
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        
+                                        
+                                        <a href="{% url 'students_list' %}?course={{ course.id }}" 
+                                           class="btn btn-outline-success" 
+                                           title="View Students">
+                                            <i class="fas fa-users"></i>
+                                        </a>
+                                        
+                                        {% if user_profile.role == 'admin' %}
+                                            
+                                            <a href="{% url 'delete_course' course.id %}" 
+                                               class="btn btn-outline-danger" 
+                                               title="Delete Course"
+                                               onclick="return confirm('Are you sure you want to delete this course? This action cannot be undone.')">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        {% endif %}
+                                        
+                                        {% if user_profile.role == 'instructor' and course.instructor == request.user %}
+                                            
+                                            <a href="{% url 'predict_performance' %}?course={{ course.id }}" 
+                                               class="btn btn-outline-info" 
+                                               title="Run Predictions">
+                                                <i class="fas fa-chart-line"></i>
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center py-5">
+                                    <div class="text-muted">
+                                        <i class="fas fa-book-open fa-4x mb-3"></i>
+                                        <h4>No Courses Found</h4>
+                                        <p class="mb-3">
+                                            {% if user_profile.role == 'admin' %}
+                                                Get started by creating your first course.
+                                            {% elif user_profile.role == 'instructor' %}
+                                                You haven't been assigned any courses yet.
+                                            {% else %}
+                                                No courses available at the moment.
+                                            {% endif %}
+                                        </p>
+                                        {% if user_profile.role == 'admin' %}
+                                        <a href="{% url 'add_course' %}" class="btn btn-primary">
+                                            <i class="fas fa-plus-circle me-2"></i>Create New Course
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Table Footer with Summary -->
+            <div class="card-footer bg-white py-3">
+                <div class="row align-items-center">
+                    <div class="col-md-12">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Showing {{ courses.count }} course{{ courses.count|pluralize }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Styles -->
+<style>
+.avatar-circle {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.table > :not(caption) > * > * {
+    padding: 1rem 0.5rem;
+}
+
+.btn-group .btn {
+    margin: 0 2px;
+    border-radius: 5px !important;
+}
+
+.badge {
+    font-weight: 500;
+}
+
+.card {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0,123,255,0.03);
+}
+</style>
+{% endblock %}

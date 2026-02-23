@@ -1,0 +1,225 @@
+{% extends 'performance_app/base.html' %}
+
+{% block title %}Login - Student Performance Prediction{% endblock %}
+
+{% block auth_content %}
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    
+    body {
+        background: #f5f7fb;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .login-card {
+        background: white;
+        border-radius: 24px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+        width: 100%;
+        max-width: 420px;
+        padding: 48px 40px;
+        margin: 20px;
+    }
+    
+    .logo {
+        text-align: center;
+        margin-bottom: 32px;
+    }
+    
+    .logo h1 {
+        font-size: 32px;
+        font-weight: 700;
+        color: #1a2639;
+        letter-spacing: -0.5px;
+        margin-bottom: 8px;
+    }
+    
+    .logo span {
+        color: #3a7bd5;
+    }
+    
+    .logo p {
+        color: #6c757d;
+        font-size: 14px;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-label {
+        display: block;
+        font-size: 14px;
+        font-weight: 500;
+        color: #2d3e50;
+        margin-bottom: 8px;
+    }
+    
+    .input-field {
+        width: 100%;
+        padding: 14px 18px;
+        border: 1.5px solid #e9ecef;
+        border-radius: 12px;
+        font-size: 15px;
+        transition: all 0.2s;
+        background: #f8fafd;
+    }
+    
+    .input-field:focus {
+        border-color: #3a7bd5;
+        background: white;
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(58,123,213,0.1);
+    }
+    
+    .input-field::placeholder {
+        color: #adb5bd;
+        font-size: 15px;
+    }
+    
+    .btn-login {
+        width: 100%;
+        padding: 14px;
+        background: #1a2639;
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin: 24px 0 16px;
+    }
+    
+    .btn-login:hover {
+        background: #2c3e5c;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(26,38,57,0.15);
+    }
+    
+    .btn-register {
+        width: 100%;
+        padding: 14px;
+        background: white;
+        color: #1a2639;
+        border: 1.5px solid #e9ecef;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+        transition: all 0.2s;
+    }
+    
+    .btn-register:hover {
+        background: #f8fafd;
+        border-color: #1a2639;
+        text-decoration: none;
+        color: #1a2639;
+    }
+    
+    .divider {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        margin: 24px 0;
+        color: #adb5bd;
+        font-size: 14px;
+    }
+    
+    .divider::before,
+    .divider::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .divider span {
+        padding: 0 16px;
+    }
+    
+    .alert {
+        padding: 14px 18px;
+        border-radius: 12px;
+        margin-bottom: 24px;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .alert-error {
+        background: #fee;
+        color: #c23b3b;
+        border: 1px solid #ffd7d7;
+    }
+    
+    .alert-success {
+        background: #e3f9ee;
+        color: #1e7b4c;
+        border: 1px solid #c3f0d7;
+    }
+    
+    .alert i {
+        font-size: 16px;
+    }
+    
+    @media (max-width: 480px) {
+        .login-card {
+            padding: 32px 24px;
+        }
+    }
+</style>
+
+<div class="login-card">
+    <div class="logo">
+        <h1>Edu<span>Predict</span></h1>
+        <p>Student Performance Prediction System</p>
+    </div>
+    
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                <i class="fas fa-{% if message.tags == 'error' %}exclamation-circle{% else %}check-circle{% endif %}"></i>
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label class="form-label">Username or Student ID</label>
+            <input type="text" 
+                   name="username" 
+                   class="input-field" 
+                   placeholder="Enter your username" 
+                   required 
+                   autofocus>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" 
+                   name="password" 
+                   class="input-field" 
+                   placeholder="Enter your password" 
+                   required>
+        </div>
+        
+        <button type="submit" class="btn-login">
+            Sign In
+        </button>
+    </form>
+</div>
+{% endblock %}

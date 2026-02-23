@@ -1,0 +1,286 @@
+{% extends 'performance_app/base.html' %}
+
+{% block title %}Students - Student Performance Prediction{% endblock %}
+{% block header %}Students Management{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <!-- Course Filter Card (shown only when filtering by course) -->
+        {% if selected_course %}
+        <div class="card bg-light mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-0">
+                            <i class="fas fa-filter text-primary"></i>
+                            Filtered by Course: 
+                            <strong>{{ selected_course.course_id }} - {{ selected_course.course_name }}</strong>
+                        </h5>
+                        <small class="text-muted">
+                            Showing {{ students.count }} student(s) from this course
+                        </small>
+                    </div>
+                    <a href="{% url 'students_list' %}" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-times"></i> Clear Filter
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h5>Students List</h5>
+                    {% if selected_course %}
+                    <small class="text-muted">Course: {{ selected_course.course_name }}</small>
+                    {% endif %}
+                </div>
+
+            </div>
+            <div class="card-body">
+                <!-- Search and Filter Controls -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <form method="get" class="d-flex">
+                            <input type="text" 
+                                   name="search" 
+                                   class="form-control" 
+                                   placeholder="Search students..." 
+                                   value="{{ search_query }}">
+                            <button type="submit" class="btn btn-outline-primary ms-2">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </form>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" onchange="window.location.href=this.value">
+                            <option value="?">All Performance</option>
+                            <option value="?performance=excellent" 
+                                    {% if performance_filter == 'excellent' %}selected{% endif %}>
+                                Excellent
+                            </option>
+                            <option value="?performance=good" 
+                                    {% if performance_filter == 'good' %}selected{% endif %}>
+                                Good
+                            </option>
+                            <option value="?performance=average" 
+                                    {% if performance_filter == 'average' %}selected{% endif %}>
+                                Average
+                            </option>
+                            <option value="?performance=poor" 
+                                    {% if performance_filter == 'poor' %}selected{% endif %}>
+                                Poor
+                            </option>
+                            <option value="?performance=at_risk" 
+                                    {% if performance_filter == 'at_risk' %}selected{% endif %}>
+                                At Risk
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" onchange="filterByCourse(this.value)">
+                            <option value="">All Courses</option>
+                            {% for course in courses %}
+                            <option value="{{ course.id }}" 
+                                    {% if selected_course and selected_course.id == course.id %}selected{% endif %}>
+                                {{ course.course_id }} - {{ course.course_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Students Table -->
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Student ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Course</th>
+                                <th>Attendance</th>
+                                <th>Performance</th>
+                                <th>Risk</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in students %}
+                            <tr>
+                                <td><strong>{{ student.student_id }}</strong></td>
+                                <td>{{ student.first_name }} {{ student.last_name }}</td>
+                                <td>{{ student.email }}</td>
+                                <td>
+                                    <span class="badge bg-secondary">
+                                        {{ student.course.course_id }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="progress" style="height: 20px; width: 100px;">
+                                        <div class="progress-bar {% if student.attendance >= 80 %}bg-success{% elif student.attendance >= 60 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                             style="width: {{ student.attendance }}%">
+                                            {{ student.attendance }}%
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if student.predicted_performance %}
+                                        <span class="performance-badge performance-{{ student.predicted_performance }}">
+                                            {{ student.predicted_performance|title }}
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-light text-dark">Not Predicted</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if student.is_at_risk %}
+                                        <span class="badge bg-danger">At Risk</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Safe</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{% url 'student_detail' student.student_id %}" 
+                                           class="btn btn-outline-primary" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="#" class="btn btn-outline-warning" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'students_list' %}?course={{ student.course.id }}" 
+                                           class="btn btn-outline-info" title="View Course Students">
+                                            <i class="fas fa-filter"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="8" class="text-center py-4">
+                                    <div class="text-muted">
+                                        <i class="fas fa-users-slash fa-3x mb-3"></i>
+                                        <h5>No students found</h5>
+                                        {% if selected_course %}
+                                            <p>No students enrolled in {{ selected_course.course_name }}</p>
+                                            <a href="{% url 'add_student' %}" class="btn btn-primary">
+                                                <i class="fas fa-user-plus"></i> Add Student to This Course
+                                            </a>
+                                        {% else %}
+                                            <p>Add your first student or upload a CSV file</p>
+                                            <a href="{% url 'add_student' %}" class="btn btn-primary">
+                                                <i class="fas fa-user-plus"></i> Add Student
+                                            </a>
+                                            <a href="{% url 'upload_csv' %}" class="btn btn-success ms-2">
+                                                <i class="fas fa-file-upload"></i> Upload CSV
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>Total Students:</strong> {{ students.count }}
+                        {% if selected_course %}
+                        <span class="ms-3">
+                            <strong>Course:</strong> {{ selected_course.course_name }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <button class="btn btn-outline-success btn-sm" onclick="exportToCSV()">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for course filtering -->
+<script>
+function filterByCourse(courseId) {
+    if (courseId) {
+        window.location.href = "{% url 'students_list' %}?course=" + courseId;
+    } else {
+        window.location.href = "{% url 'students_list' %}";
+    }
+}
+
+function exportToCSV() {
+    // Get current filter parameters
+    let params = new URLSearchParams(window.location.search);
+    params.append('export', 'csv');
+    
+    window.location.href = window.location.pathname + '?' + params.toString();
+}
+
+// Highlight the course filter when coming from courses page
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const courseId = urlParams.get('course');
+    
+    if (courseId) {
+        // Scroll to the filter section
+        const filterCard = document.querySelector('.card.bg-light');
+        if (filterCard) {
+            filterCard.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+});
+</script>
+
+<style>
+.performance-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 50rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.performance-excellent {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.performance-good {
+    background-color: #d1ecf1;
+    color: #0c5460;
+}
+
+.performance-average {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.performance-poor {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.performance-at_risk {
+    background-color: #721c24;
+    color: white;
+}
+
+.badge.bg-secondary {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+}
+
+.progress {
+    border-radius: 10px;
+    overflow: hidden;
+}
+</style>
+{% endblock %}

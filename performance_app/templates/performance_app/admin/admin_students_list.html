@@ -1,0 +1,102 @@
+{% extends 'performance_app/base.html' %}
+
+{% block title %}Manage Students - Admin{% endblock %}
+{% block header %}Manage Students{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="mb-0">All Registered Students</h5>
+                    <small class="text-muted">Default password for all: raheem@123</small>
+                </div>
+                <div>
+                    <a href="{% url 'admin_register_student' %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-user-plus"></i> Add Student
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Student ID</th>
+                                <th>Name</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Course</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in students %}
+                            <tr>
+                                <td><strong>{{ student.student_id }}</strong></td>
+                                <td>{{ student.first_name }} {{ student.last_name }}</td>
+                                <td>
+                                    {% if student.user_account %}
+                                        {{ student.user_account.username }}
+                                    {% else %}
+                                        <span class="badge bg-warning">No Account</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ student.email }}</td>
+                                <td>
+                                    <span class="badge bg-secondary">
+                                        {{ student.course.course_id }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if student.user_account %}
+                                        <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        {% if student.user_account %}
+                                        
+                                        {% endif %}
+                                        <a href="{% url 'student_detail' student.student_id %}" 
+                                           class="btn btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <form method="post"
+                                    action="{% url 'admin_delete_student' student.student_id %}"
+                                    style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit"
+                                            class="btn btn-outline-danger"
+                                            title="Delete Student">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center py-4">
+                                    <div class="text-muted">
+                                        <i class="fas fa-users-slash fa-3x mb-3"></i>
+                                        <h5>No students registered yet</h5>
+                                        <a href="{% url 'admin_register_student' %}" class="btn btn-primary">
+                                            <i class="fas fa-user-plus"></i> Register First Student
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

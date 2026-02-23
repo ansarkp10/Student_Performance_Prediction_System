@@ -1,0 +1,83 @@
+{% extends 'performance_app/base.html' %}
+
+{% block title %}My Predictions{% endblock %}
+{% block header %}My Predictions{% endblock %}
+
+{% block content %}
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="stat-card bg-info text-white">
+            <h4>Predicted Performance</h4>
+            <h2>{{ student.predicted_performance|title }}</h2>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="stat-card {% if student.is_at_risk %}bg-danger{% else %}bg-success{% endif %} text-white">
+            <h4>Risk Status</h4>
+            <h2>
+                {% if student.is_at_risk %}
+                    At Risk
+                {% else %}
+                    Safe
+                {% endif %}
+            </h2>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="stat-card bg-warning text-white">
+            <h4>Confidence</h4>
+            <h2>85%</h2> {# static or calculated #}
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h5>Prediction Factors</h5>
+    </div>
+    <div class="card-body">
+        <table class="table">
+            <tr>
+                <th>Attendance</th>
+                <td>{{ student.attendance }}%</td>
+            </tr>
+            <tr>
+                <th>Assignment Score</th>
+                <td>{{ student.assignment_score }}%</td>
+            </tr>
+            <tr>
+                <th>Quiz Score</th>
+                <td>{{ student.quiz_score }}%</td>
+            </tr>
+            <tr>
+                <th>Time Spent</th>
+                <td>{{ student.time_spent }} hrs/week</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5>Improvement Suggestions</h5>
+    </div>
+    <div class="card-body">
+        <ul>
+            {% if student.attendance < 75 %}
+                <li>Improve attendance to at least 80%</li>
+            {% endif %}
+            {% if student.quiz_score < 60 %}
+                <li>Practice quizzes regularly</li>
+            {% endif %}
+            {% if student.assignment_score < 60 %}
+                <li>Submit assignments on time</li>
+            {% endif %}
+            <li>Maintain consistent study schedule</li>
+        </ul>
+    </div>
+</div>
+
+{% endblock %}

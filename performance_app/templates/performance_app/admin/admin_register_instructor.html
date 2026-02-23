@@ -1,0 +1,230 @@
+{% extends 'performance_app/base.html' %}
+
+{% block title %}Register Instructor - Admin{% endblock %}
+{% block header %}Register New Instructor{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-chalkboard-teacher"></i> Instructor Registration</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Login Credentials:</strong><br>
+                        - Instructor will login using <strong>Instructor ID</strong><br>
+                        - Default password: <strong>raheem@123</strong>
+                    </div>
+                    
+                    {% if messages %}
+                    <div class="mb-3">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-id-card"></i> Instructor ID *
+                                </label>
+                                {{ form.instructor_id }}
+                                {% if form.instructor_id.errors %}
+                                <div class="text-danger small">
+                                    {{ form.instructor_id.errors }}
+                                </div>
+                                {% endif %}
+                                <small class="text-muted">e.g., INS001, FAC2024, TCH101</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-university"></i> Institution *
+                                </label>
+                                {{ form.institution }}
+                                {% if form.institution.errors %}
+                                <div class="text-danger small">
+                                    {{ form.institution.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-user"></i> First Name *
+                                </label>
+                                {{ form.first_name }}
+                                {% if form.first_name.errors %}
+                                <div class="text-danger small">
+                                    {{ form.first_name.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-user"></i> Last Name *
+                                </label>
+                                {{ form.last_name }}
+                                {% if form.last_name.errors %}
+                                <div class="text-danger small">
+                                    {{ form.last_name.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-envelope"></i> Email *
+                                </label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                <div class="text-danger small">
+                                    {{ form.email.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-phone"></i> Phone
+                                </label>
+                                {{ form.phone }}
+                                {% if form.phone.errors %}
+                                <div class="text-danger small">
+                                    {{ form.phone.errors }}
+                                </div>
+                                {% endif %}
+                                <small class="text-muted">Optional</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- OPTIONAL: Add course assignment field -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="fas fa-book"></i> Assign to Course (Optional)
+                        </label>
+                        {{ form.course }}
+                        <small class="text-muted d-block mt-1">
+                            <i class="fas fa-info-circle"></i> 
+                            You can assign courses to this instructor now or later
+                        </small>
+                        {% if form.course.errors %}
+                        <div class="text-danger small">
+                            {{ form.course.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-key"></i>
+                        <strong>Auto-generated Username:</strong> 
+                        System will create username as <code>ins_[instructor_id]</code><br>
+                        <small>Example: INS001 → username: <code>ins_INS001</code></small>
+                    </div>
+                    
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-user-plus"></i> Register Instructor
+                        </button>
+                        <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Dashboard
+                        </a>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="card-footer bg-light">
+                <div class="small text-muted">
+                    <i class="fas fa-info-circle"></i>
+                    After registration, instructor can login using their <strong>Instructor ID</strong> 
+                    and password <strong>raheem@123</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control, .form-select {
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 1px solid #ced4da;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #28a745;
+        box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+    }
+    
+    label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 6px;
+    }
+    
+    .card {
+        border: none;
+        box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    }
+    
+    .alert {
+        border-left: 4px solid;
+    }
+    
+    .alert-info {
+        border-left-color: #17a2b8;
+    }
+    
+    .alert-warning {
+        border-left-color: #ffc107;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-format instructor ID to uppercase
+    const instructorIdField = document.querySelector('input[name="instructor_id"]');
+    if (instructorIdField) {
+        instructorIdField.addEventListener('blur', function() {
+            this.value = this.value.toUpperCase();
+        });
+        
+        instructorIdField.addEventListener('input', function() {
+            // Optional: Remove spaces and special characters
+            this.value = this.value.replace(/[^a-zA-Z0-9]/g, '');
+        });
+    }
+    
+    // Preview username
+    instructorIdField.addEventListener('keyup', function() {
+        const previewSpan = document.getElementById('usernamePreview');
+        if (this.value) {
+            document.querySelector('.alert-warning code').textContent = `ins_${this.value.toUpperCase()}`;
+        }
+    });
+});
+</script>
+{% endblock %}

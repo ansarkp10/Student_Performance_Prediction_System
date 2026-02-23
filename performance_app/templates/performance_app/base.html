@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Student Performance Prediction{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        /* Fixed Sidebar - Always visible */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            overflow-y: auto;
+            z-index: 1030;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar-inner {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            padding: 0;
+        }
+        
+        /* Main content area - fixed margin for sidebar */
+        .main-content {
+            margin-left: 280px;
+            padding: 20px 30px;
+            min-height: 100vh;
+            background-color: #f8f9fa;
+            width: calc(100% - 280px);
+        }
+        
+        /* Sidebar header */
+        .sidebar-header {
+            padding: 25px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(0, 0, 0, 0.1);
+        }
+        
+        .sidebar-header h4 {
+            margin-bottom: 5px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        
+        .sidebar-header small {
+            opacity: 0.9;
+            font-size: 12px;
+        }
+        
+        /* Navigation menu */
+        .sidebar-nav {
+            flex: 1;
+            padding: 20px 15px;
+            overflow-y: auto;
+        }
+        
+        /* Scrollbar styling */
+        .sidebar-nav::-webkit-scrollbar {
+            width: 5px;
+        }
+        
+        .sidebar-nav::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .sidebar-nav::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+        
+        .sidebar-nav::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+        
+        /* Sidebar navigation links */
+        .sidebar .nav {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.85);
+            padding: 12px 18px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-size: 15px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+        
+        .sidebar .nav-link:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(5px);
+        }
+        
+        .sidebar .nav-link.active {
+            color: white;
+            background: rgba(255, 255, 255, 0.25);
+            font-weight: 600;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar .nav-link i {
+            width: 24px;
+            text-align: center;
+            margin-right: 12px;
+            font-size: 16px;
+        }
+        
+        /* Sidebar footer - always at bottom */
+        .sidebar-footer {
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            margin-top: auto;
+        }
+        
+        .sidebar-footer small {
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .sidebar-footer .btn-outline-light {
+            border-color: rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 6px 12px;
+            font-size: 14px;
+        }
+        
+        .sidebar-footer .btn-outline-light:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: white;
+        }
+        
+        /* Mobile responsive - toggle button */
+        .sidebar-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1040;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 15px;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        
+        /* Overlay for mobile */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1025;
+        }
+        
+        /* Your existing styles remain the same */
+        .stat-card {
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .stat-card h3 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-card p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 0;
+        }
+        
+        .performance-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            display: inline-block;
+        }
+        
+        .performance-excellent {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .performance-good {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .performance-average {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .performance-poor {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .performance-at_risk {
+            background-color: #dc3545;
+            color: white;
+            border: 1px solid #dc3545;
+        }
+        
+        .risk-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .risk-yes {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+        
+        .risk-no {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            height: 350px;
+            position: relative;
+        }
+        
+        .chart-container h5 {
+            margin-bottom: 20px;
+            color: #333;
+            font-weight: 600;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+        
+        .table-hover tbody tr:hover {
+            background-color: rgba(0, 123, 255, 0.05);
+        }
+        
+        .table th {
+            border-top: none;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+        }
+        
+        .alert {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .opacity-50 {
+            opacity: 0.5;
+        }
+        
+        .opacity-50 * {
+            pointer-events: none;
+        }
+        
+        .text-purple { color: #9b59b6; }
+        .text-orange { color: #e67e22; }
+        
+        .main-header {
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Responsive design for mobile */
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                width: 280px;
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+                padding: 20px;
+            }
+            
+            .sidebar-toggle {
+                display: block;
+            }
+            
+            .sidebar-overlay.show {
+                display: block;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .sidebar {
+                width: 260px;
+            }
+            
+            .stat-card h3 {
+                font-size: 1.8rem;
+            }
+            
+            .chart-container {
+                height: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    {% if user.is_authenticated %}
+    <!-- Mobile Toggle Button -->
+    <button class="sidebar-toggle" id="sidebarToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Sidebar Overlay for Mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
+    <!-- Fixed Sidebar - Always visible on desktop, toggle on mobile -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-inner">
+            <!-- Sidebar Header -->
+            <div class="sidebar-header">
+                <h4><i class="fas fa-graduation-cap"></i> EduPredict</h4>
+                <small>Student Performance Prediction</small>
+            </div>
+            
+            <!-- Navigation Menu - This stays fixed and always visible -->
+            <!-- Navigation Menu - This stays fixed and always visible -->
+<div class="sidebar-nav">
+    <ul class="nav flex-column">
+        <!-- Dashboard -->
+        {% if user_profile.role != 'admin' %}
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" 
+               href="{% url 'dashboard' %}">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+        </li>
+        {% endif %}
+        
+        <!-- Admin Dashboard Link (only for admins) -->
+        {% if user_profile.role == 'admin' %}
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}" 
+               href="{% url 'admin_dashboard' %}">
+                <i class="fas fa-crown"></i> Admin Dashboard
+            </a>
+        </li>
+        {% endif %}
+        
+        <!-- ===== STUDENT ONLY MENU ITEMS ===== -->
+        {% if user_profile.role == 'student' %}
+        {% if user_profile.role == 'student' and request.user.student_account %}
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'student_detail' %}active{% endif %}"
+               href="{% url 'student_detail' request.user.student_account.student_id %}">
+                <i class="fas fa-user-graduate"></i> My Performance
+            </a>
+        </li>
+        {% endif %}
+
+        <!-- Student can view predictions (only their own) -->
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'predictions_view' %}active{% endif %}" 
+               href="{% url 'student_predictions' %}">
+                <i class="fas fa-chart-line"></i> My Predictions
+            </a>
+        </li>
+        
+        <!-- Student can view visualizations (personalized) -->
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'visualize_data' %}active{% endif %}" 
+               href="{% url 'visualize_data' %}">
+                <i class="fas fa-chart-bar"></i> My Analytics
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'student_courses' %}active{% endif %}"
+               href="{% url 'student_courses' %}">
+                <i class="fas fa-book"></i> My Courses
+            </a>
+        </li>
+        {% endif %}
+        
+        <!-- ===== INSTRUCTOR MENU ITEMS ===== -->
+        {% if user_profile.role == 'instructor' %}
+        <!-- Courses - Instructor can manage their courses -->
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name in 'courses_list,add_course' %}active{% endif %}" 
+               href="{% url 'courses_list' %}">
+                <i class="fas fa-book"></i> Course Management
+            </a>
+        </li>
+        
+        <!-- Students - View class students -->
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name in 'students_list,add_student,student_detail' %}active{% endif %}" 
+               href="{% url 'students_list' %}">
+                <i class="fas fa-users"></i> Class Students
+            </a>
+        </li>
+        
+        <!-- Predict Performance - Run predictions -->
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'predict_performance' %}active{% endif %}" 
+               href="{% url 'predict_performance' %}">
+                <i class="fas fa-brain"></i> Run Predictions
+            </a>
+        </li>
+        
+        <!-- View Predictions - See all predictions -->
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'predictions_view' %}active{% endif %}" 
+               href="{% url 'predictions_view' %}">
+                <i class="fas fa-chart-line"></i> View Predictions
+            </a>
+        </li>
+        
+        <!-- Visualizations - Class analytics -->
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'visualize_data' %}active{% endif %}" 
+               href="{% url 'visualize_data' %}">
+                <i class="fas fa-chart-bar"></i> Class Analytics
+            </a>
+        </li>
+        {% endif %}
+        
+        <!-- ===== ADMIN MENU ITEMS ===== -->
+        {% if user_profile.role == 'admin' %}
+        <!-- Admin Student Registration -->
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'admin_register_student' %}active{% endif %}" 
+               href="{% url 'admin_register_student' %}">
+                <i class="fas fa-user-plus"></i> Register Student
+            </a>
+        </li>
+        
+        <!-- Admin Instructor Registration -->
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'admin_register_instructor' %}active{% endif %}" 
+               href="{% url 'admin_register_instructor' %}">
+                <i class="fas fa-chalkboard-teacher"></i> Register Instructor
+            </a>
+        </li>
+        
+        <!-- Admin Manage Students -->
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'admin_students_list' %}active{% endif %}" 
+               href="{% url 'admin_students_list' %}">
+                <i class="fas fa-user-graduate"></i> Manage Students
+            </a>
+        </li>
+        
+        <!-- Admin Manage Instructors -->
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'admin_instructors_list' %}active{% endif %}" 
+               href="{% url 'admin_instructors_list' %}">
+                <i class="fas fa-user-tie"></i> Manage Instructors
+            </a>
+        </li>
+        
+        <!-- Courses - Admin can view all courses -->
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name in 'courses_list,add_course' %}active{% endif %}" 
+               href="{% url 'courses_list' %}">
+                <i class="fas fa-university"></i> All Courses
+            </a>
+        </li>
+        
+        <!-- UPLOAD CSV - Only for Admin -->
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'upload_csv' %}active{% endif %}" 
+               href="{% url 'upload_csv' %}">
+                <i class="fas fa-file-upload"></i> Upload Student Data
+            </a>
+        </li>
+        
+        <!-- Students - View all students -->
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name in 'students_list,add_student,student_detail' %}active{% endif %}" 
+               href="{% url 'students_list' %}">
+                <i class="fas fa-users"></i> All Students
+            </a>
+        </li>
+        
+        <!-- Predict Performance - System-wide predictions -->
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'predict_performance' %}active{% endif %}" 
+               href="{% url 'predict_performance' %}">
+                <i class="fas fa-brain"></i> Run System Predictions
+            </a>
+        </li>
+        
+        <!-- View Predictions - All predictions -->
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'predictions_view' %}active{% endif %}" 
+               href="{% url 'predictions_view' %}">
+                <i class="fas fa-chart-line"></i> View All Predictions
+            </a>
+        </li>
+        
+        <!-- Visualizations - System analytics -->
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'visualize_data' %}active{% endif %}" 
+               href="{% url 'visualize_data' %}">
+                <i class="fas fa-chart-bar"></i> System Analytics
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</div>
+            
+            <!-- User info at bottom - always visible -->
+            <div class="sidebar-footer">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <small class="d-block">
+                            <strong>
+                            {% if user_profile.role == 'student' %}
+                                {{ user.first_name }} {{ user.last_name }}
+
+                            {% elif user_profile.role == 'instructor' %}
+                                {{ user.first_name }} {{ user.last_name }}
+
+                            {% else %}
+                                {{ user.username }}
+                            {% endif %}
+                        </strong>
+                        </small>
+                       <small class="text-white-50">
+                        {% if user_profile.role == 'student' %}
+                            {% if student_obj %}
+                                Student • ID: {{ student_obj.student_id }}
+                            {% else %}
+                                Student • ID: N/A
+                            {% endif %}
+                        {% elif user_profile.role == 'instructor' %}
+                            Instructor • {{ user_profile.institution|default:"University" }}
+                        {% else %}
+                            Administrator • System Admin
+                        {% endif %}
+                    </small>
+                    </div>
+                    <a href="{% url 'logout' %}" class="btn btn-sm btn-outline-light" title="Logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h1 class="h2">{% block header %}{% endblock %}</h1>
+            {% block header_actions %}{% endblock %}
+        </div>
+        
+        <!-- Messages -->
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                <i class="fas 
+                    {% if message.tags == 'success' %}fa-check-circle
+                    {% elif message.tags == 'error' or message.tags == 'danger' %}fa-exclamation-circle
+                    {% elif message.tags == 'warning' %}fa-exclamation-triangle
+                    {% elif message.tags == 'info' %}fa-info-circle
+                    {% endif %} me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        {% block content %}{% endblock %}
+    </main>
+    
+    {% else %}
+        {% block auth_content %}{% endblock %}
+    {% endif %}
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    {% block scripts %}{% endblock %}
+    
+    <script>
+    // Auto-dismiss alerts after 5 seconds
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() {
+            const alerts = document.querySelectorAll('.alert:not(.alert-permanent)');
+            alerts.forEach(function(alert) {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 5000);
+    });
+    
+    // Mobile sidebar toggle
+    document.addEventListener('DOMContentLoaded', function() {
+        const sidebar = document.getElementById('sidebar');
+        const toggleBtn = document.getElementById('sidebarToggle');
+        const overlay = document.getElementById('sidebarOverlay');
+        
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                sidebar.classList.toggle('show');
+                overlay.classList.toggle('show');
+            });
+        }
+        
+        if (overlay) {
+            overlay.addEventListener('click', function() {
+                sidebar.classList.remove('show');
+                overlay.classList.remove('show');
+            });
+        }
+        
+        // Close sidebar when clicking on nav link (mobile)
+        const navLinks = document.querySelectorAll('.nav-link');
+        navLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 992) {
+                    sidebar.classList.remove('show');
+                    overlay.classList.remove('show');
+                }
+            });
+        });
+    });
+    
+    // Add active class based on current URL
+    document.addEventListener('DOMContentLoaded', function() {
+        const currentPath = window.location.pathname;
+        const navLinks = document.querySelectorAll('.nav-link');
+        
+        navLinks.forEach(link => {
+            if (link.getAttribute('href') === currentPath) {
+                link.classList.add('active');
+            }
+        });
+    });
+    </script>
+</body>
+</html>

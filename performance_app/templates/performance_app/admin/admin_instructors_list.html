@@ -1,0 +1,471 @@
+{% extends 'performance_app/base.html' %}
+
+{% block title %}Manage Instructors - Admin{% endblock %}
+{% block header %}Manage Instructors{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="mb-0"><i class="fas fa-chalkboard-teacher"></i> Instructor Management</h5>
+                    <small class="opacity-75">Default password for all instructors: <strong>raheem@123</strong></small>
+                </div>
+                <div>
+                    <a href="{% url 'admin_register_instructor' %}" class="btn btn-light btn-sm">
+                        <i class="fas fa-user-plus"></i> Add New Instructor
+                    </a>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                {% if messages %}
+                <div class="mb-4">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        <i class="fas fa-{% if message.tags == 'success' %}check-circle{% else %}exclamation-circle{% endif %}"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <!-- Statistics Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body py-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-0">Total Instructors</h6>
+                                        <h3 class="mb-0">{{ instructors.count }}</h3>
+                                    </div>
+                                    <i class="fas fa-chalkboard-teacher fa-2x opacity-75"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="card bg-info text-white">
+                            <div class="card-body py-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-0">Active</h6>
+                                        <h3 class="mb-0">{{ instructors.count }}</h3>
+                                    </div>
+                                    <i class="fas fa-user-check fa-2x opacity-75"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="card bg-warning text-white">
+                            <div class="card-body py-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-0">Courses Taught</h6>
+                                        <h3 class="mb-0">{{ total_courses }}</h3>
+                                    </div>
+                                    <i class="fas fa-book fa-2x opacity-75"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <div class="card bg-secondary text-white">
+                            <div class="card-body py-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-0">Recent Additions</h6>
+                                        <h3 class="mb-0">{{ recent_count }}</h3>
+                                    </div>
+                                    <i class="fas fa-clock fa-2x opacity-75"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Search and Filter -->
+                <div class="row mb-3">
+                    <div class="col-md-8">
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Search by Instructor ID, Name, Email, or Institution..." id="searchInput">
+                            <button class="btn btn-outline-secondary" type="button" id="searchButton">
+                                <i class="fas fa-search"></i>
+                            </button>
+                            <button class="btn btn-outline-secondary" type="button" id="clearSearch">
+                                <i class="fas fa-times"></i> Clear
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <select class="form-select" id="filterSelect">
+                            <option value="all">All Instructors</option>
+                            <option value="recent">Recently Added</option>
+                            <option value="active">Active This Month</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Instructors Table -->
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped" id="instructorsTable">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>
+                                    <i class="fas fa-id-card"></i> Instructor ID
+                                </th>
+                                <th>
+                                    <i class="fas fa-user"></i> Name
+                                </th>
+                                <th>
+                                    <i class="fas fa-envelope"></i> Contact
+                                </th>
+                                <th>
+                                    <i class="fas fa-university"></i> Institution
+                                </th>
+                                <th>
+                                    <i class="fas fa-book"></i> Courses
+                                </th>
+                                <th>
+                                    <i class="fas fa-calendar"></i> Registered
+                                </th>
+                                <th class="text-center">
+                                    <i class="fas fa-cogs"></i> Actions
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for instructor in instructors %}
+                            <tr>
+                                <td>
+                                    <span class="badge bg-dark">
+                                        <strong>{{ instructor.instructor_id }}</strong>
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-circle bg-success text-white me-3">
+                                            {{ instructor.first_name|first|default:'' }}{{ instructor.last_name|first|default:'' }}
+                                        </div>
+                                        <div>
+                                            <strong>{{ instructor.first_name }} {{ instructor.last_name }}</strong><br>
+                                            <small class="text-muted">@{{ instructor.user_account.username }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>
+                                        <i class="fas fa-envelope text-primary me-2"></i>
+                                        <a href="mailto:{{ instructor.email }}" class="text-decoration-none">
+                                            {{ instructor.email }}
+                                        </a>
+                                        {% if instructor.phone %}
+                                        <br>
+                                        <i class="fas fa-phone text-success me-2"></i>
+                                        <small>{{ instructor.phone }}</small>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">
+                                        <i class="fas fa-university me-1"></i>
+                                        {{ instructor.institution|default:"Not specified" }}
+                                    </span>
+                                </td>
+                                <td>
+                                {% with courses=instructor.user_account.courses.all %}
+                                    {% if courses %}
+                                        {% for course in courses %}
+                                            <span class="badge bg-primary mb-1">
+                                                <i class="fas fa-book me-1"></i>
+                                                {{ course.course_name }}
+                                            </span>
+                                        {% endfor %}
+                                    {% else %}
+                                        <span class="badge bg-secondary">
+                                            <i class="fas fa-ban me-1"></i> No Course Assigned
+                                        </span>
+                                    {% endif %}
+                                {% endwith %}
+                            </td>
+                                <td>
+                                    <small>
+                                        <i class="fas fa-calendar-alt me-1 text-muted"></i>
+                                        {{ instructor.created_at|date:"M d, Y" }}
+                                    </small>
+                                    <br>
+                                    <small class="text-muted">
+                                        {{ instructor.created_at|timesince }} ago
+                                    </small>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        {% if instructor.user_account %}
+
+                                            <button type="button" class="btn btn-outline-info" 
+                                                    title="View Details"
+                                                    onclick="showInstructorDetails('{{ instructor.instructor_id }}',
+                                                                                    '{{ instructor.user_account.username }}', 
+                                                                                    '{{ instructor.first_name }}', 
+                                                                                    '{{ instructor.last_name }}', 
+                                                                                    '{{ instructor.email }}', 
+                                                                                    '{{ instructor.institution }}', 
+                                                                                    '{{ instructor.phone }}', 
+                                                                                    '{{ instructor.created_at|date:"M d, Y" }}',
+                                                                                    '{{ instructor.user_account.id }}')">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <a href="{% url 'admin_delete_instructor_direct' instructor.user_account.id %}" 
+                                               class="btn btn-outline-danger" 
+                                               title="Delete Instructor">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        {% else %}
+                                            <span class="btn btn-outline-warning disabled" title="No user account">
+                                                <i class="fas fa-key"></i>
+                                            </span>
+                                            <span class="btn btn-outline-info disabled" title="No user account">
+                                                <i class="fas fa-eye"></i>
+                                            </span>
+                                            <span class="btn btn-outline-danger disabled" title="No user account">
+                                                <i class="fas fa-trash"></i>
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center py-5">
+                                    <div class="text-muted">
+                                        <i class="fas fa-chalkboard-teacher fa-4x mb-3"></i>
+                                        <h4>No Instructors Found</h4>
+                                        <p class="mb-4">You haven't registered any instructors yet.</p>
+                                        <a href="{% url 'admin_register_instructor' %}" class="btn btn-success btn-lg">
+                                            <i class="fas fa-user-plus"></i> Register First Instructor
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination (if needed) -->
+                {% if instructors.has_other_pages %}
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if instructors.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ instructors.previous_page_number }}">Previous</a>
+                        </li>
+                        {% endif %}
+                        
+                        {% for num in instructors.paginator.page_range %}
+                        <li class="page-item {% if instructors.number == num %}active{% endif %}">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                        {% endfor %}
+                        
+                        {% if instructors.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ instructors.next_page_number }}">Next</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            </div>
+            
+            <div class="card-footer bg-light">
+                <div class="row">
+                    <div class="col-md-6">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle"></i>
+                            Showing {{ instructors.count }} instructor{{ instructors.count|pluralize }}
+                        </small>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Back to Dashboard
+                        </a>
+                        <a href="{% url 'admin_register_instructor' %}" class="btn btn-success btn-sm">
+                            <i class="fas fa-user-plus"></i> Add Instructor
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Instructor Details Modal -->
+<div class="modal fade" id="instructorModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="fas fa-chalkboard-teacher"></i> Instructor Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-4">
+                    <div class="avatar-circle-lg bg-success text-white mx-auto mb-3">
+                        <span id="modalInitials">JD</span>
+                    </div>
+                    <h4 id="modalName">John Doe</h4>
+                    <p class="text-muted" id="modalUsername">@johndoe</p>
+                    <span class="badge bg-dark mt-2" id="modalId">INS001</span>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label"><i class="fas fa-envelope text-primary"></i> Email</label>
+                        <p id="modalEmail" class="form-control-plaintext">email@example.com</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label"><i class="fas fa-phone text-success"></i> Phone</label>
+                        <p id="modalPhone" class="form-control-plaintext">Not specified</p>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label"><i class="fas fa-university text-info"></i> Institution</label>
+                    <p id="modalInstitution" class="form-control-plaintext">University of Example</p>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label"><i class="fas fa-calendar text-warning"></i> Joined</label>
+                    <p id="modalJoined" class="form-control-plaintext">Jan 01, 2024</p>
+                </div>
+                
+                <div class="alert alert-info">
+                    <i class="fas fa-key"></i> 
+                    <strong>Login Credentials:</strong><br>
+                    <span class="badge bg-dark mt-1">Instructor ID: <span id="modalLoginId">INS001</span></span><br>
+                    <small>Default Password: <strong>raheem@123</strong></small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="#" id="modalResetBtn" class="btn btn-warning">
+                    <i class="fas fa-key"></i> Reset Password
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.avatar-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.avatar-circle-lg {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 28px;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.05);
+    transform: translateY(-2px);
+    transition: all 0.2s ease;
+}
+
+.badge {
+    font-size: 0.8em;
+    padding: 0.4em 0.8em;
+}
+
+.card-header {
+    border-bottom: none;
+}
+
+.btn-group-sm .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Search functionality
+    const searchInput = document.getElementById('searchInput');
+    const searchButton = document.getElementById('searchButton');
+    const clearSearch = document.getElementById('clearSearch');
+    const instructorsTable = document.getElementById('instructorsTable');
+    const rows = instructorsTable.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+    
+    searchButton.addEventListener('click', function() {
+        filterTable(searchInput.value.toLowerCase());
+    });
+    
+    searchInput.addEventListener('keyup', function() {
+        filterTable(this.value.toLowerCase());
+    });
+    
+    clearSearch.addEventListener('click', function() {
+        searchInput.value = '';
+        filterTable('');
+    });
+    
+    function filterTable(searchTerm) {
+        for (let row of rows) {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(searchTerm) ? '' : 'none';
+        }
+    }
+    
+    // Filter select
+    document.getElementById('filterSelect').addEventListener('change', function() {
+        const filterValue = this.value;
+        for (let row of rows) {
+            if (filterValue === 'all') {
+                row.style.display = '';
+            }
+        }
+    });
+});
+
+function showInstructorDetails(instructorId, username, firstName, lastName, email, institution, phone, joinedDate, userId) {
+    // Set modal content
+    document.getElementById('modalInitials').textContent = 
+        (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
+    document.getElementById('modalName').textContent = `${firstName} ${lastName}`;
+    document.getElementById('modalUsername').textContent = `@${username}`;
+    document.getElementById('modalId').textContent = instructorId;
+    document.getElementById('modalEmail').textContent = email;
+    document.getElementById('modalPhone').textContent = phone || 'Not specified';
+    document.getElementById('modalInstitution').textContent = institution || 'Not specified';
+    document.getElementById('modalJoined').textContent = joinedDate;
+    document.getElementById('modalLoginId').textContent = instructorId;
+    
+    // Set reset password link
+    document.getElementById('modalResetBtn').href = '/admin/reset-password/' + userId + '/';
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('instructorModal'));
+    modal.show();
+}
+</script>
+{% endblock %}

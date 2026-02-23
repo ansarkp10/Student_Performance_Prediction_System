@@ -1,0 +1,233 @@
+{% extends 'performance_app/base.html' %}
+
+{% block title %}Predict Performance - Student Performance Prediction{% endblock %}
+{% block header %}Predict Student Performance{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5><i class="fas fa-chart-line"></i> Course Performance Prediction</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <label for="course" class="form-label">
+                            <strong><i class="fas fa-book"></i> Select Course</strong>
+                        </label>
+                        <select name="course" id="course" class="form-select form-select-lg" required>
+                            <option value="">-- Select a Course --</option>
+                            {% for course in courses %}
+                            <option value="{{ course.id }}">
+                                {{ course.course_id }} - {{ course.course_name }}
+                                {% if course.instructor %}
+                                (Instructor: {{ course.instructor.get_full_name|default:course.instructor.username }})
+                                {% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">
+                            Select the course for which you want to predict student performance.
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <div class="d-flex">
+                            <i class="fas fa-info-circle fa-2x me-3"></i>
+                            <div>
+                                <strong>What will be analyzed:</strong>
+                                <ul class="mb-0 mt-2">
+                                    <li>Attendance rates</li>
+                                    <li>Assignment scores</li>
+                                    <li>Quiz performance</li>
+                                    <li>Time spent on materials</li>
+                                    <li>Forum participation</li>
+                                    <li>Resource engagement</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-bolt fa-3x text-warning mb-3"></i>
+                                    <h5>Quick Prediction</h5>
+                                    <p class="text-muted">
+                                        Uses our optimized algorithm to predict performance
+                                    </p>
+                                    <button type="submit" class="btn btn-warning btn-lg w-100">
+                                        <i class="fas fa-play-circle"></i> Run Prediction
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-chart-bar fa-3x text-primary mb-3"></i>
+                                    <h5>View Results</h5>
+                                    <p class="text-muted">
+                                        See previous predictions and analytics
+                                    </p>
+                                    <a href="{% url 'predictions_view' %}" class="btn btn-primary btn-lg w-100">
+                                        <i class="fas fa-eye"></i> View Predictions
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-lightbulb text-warning"></i> Prediction Tips:</h6>
+                        <ul class="small">
+                            <li>Ensure student data is complete before predicting</li>
+                            <li>Predictions are more accurate with more data</li>
+                            <li>Update student metrics regularly for best results</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-clock text-info"></i> What to Expect:</h6>
+                        <ul class="small">
+                            <li>Students will be categorized by performance level</li>
+                            <li>At-risk students will be flagged</li>
+                            <li>Detailed analytics will be available</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Course Info Card (if a course is selected) -->
+        <div class="card mt-4 d-none" id="courseInfoCard">
+            <div class="card-header">
+                <h6>Course Information</h6>
+            </div>
+            <div class="card-body">
+                <div id="courseInfoContent">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- How It Works Card -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6><i class="fas fa-cogs"></i> How Prediction Works</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 text-center mb-3">
+                        <div class="p-3 border rounded">
+                            <i class="fas fa-database fa-2x text-primary mb-2"></i>
+                            <h6>Data Collection</h6>
+                            <p class="small">Student metrics are gathered from the system</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-center mb-3">
+                        <div class="p-3 border rounded">
+                            <i class="fas fa-brain fa-2x text-success mb-2"></i>
+                            <h6>Analysis</h6>
+                            <p class="small">AI algorithms analyze patterns and trends</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-center mb-3">
+                        <div class="p-3 border rounded">
+                            <i class="fas fa-chart-pie fa-2x text-warning mb-2"></i>
+                            <h6>Results</h6>
+                            <p class="small">Performance levels and risk assessments are generated</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for course selection -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const courseSelect = document.getElementById('course');
+    const courseInfoCard = document.getElementById('courseInfoCard');
+    const courseInfoContent = document.getElementById('courseInfoContent');
+    
+    // Course data from Django (you might want to pass this via JSON)
+    const coursesData = {
+        {% for course in courses %}
+        "{{ course.id }}": {
+            "name": "{{ course.course_name }}",
+            "code": "{{ course.course_id }}",
+            "instructor": "{{ course.instructor.get_full_name|default:course.instructor.username }}",
+            "description": "{{ course.description|default:'No description available' }}",
+            "students_count": "{{ course.students.count }}"  // Note: This requires prefetch_related
+        },
+        {% endfor %}
+    };
+    
+    courseSelect.addEventListener('change', function() {
+        const courseId = this.value;
+        
+        if (courseId && coursesData[courseId]) {
+            const course = coursesData[courseId];
+            
+            courseInfoContent.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>${course.name}</h5>
+                        <p class="text-muted">${course.code}</p>
+                        <p><strong>Instructor:</strong> ${course.instructor}</p>
+                        <p><strong>Students:</strong> ${course.students_count} enrolled</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Description:</strong></p>
+                        <p>${course.description}</p>
+                    </div>
+                </div>
+                <div class="alert alert-warning mt-3">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Ready to predict?</strong> Click "Run Prediction" to analyze ${course.students_count} students in this course.
+                </div>
+            `;
+            
+            courseInfoCard.classList.remove('d-none');
+        } else {
+            courseInfoCard.classList.add('d-none');
+        }
+    });
+});
+</script>
+
+<style>
+.form-select-lg {
+    padding: 0.75rem 1rem;
+    font-size: 1.1rem;
+    border-radius: 0.5rem;
+}
+
+.card.bg-light {
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.card.bg-light:hover {
+    border-color: var(--bs-primary);
+    transform: translateY(-5px);
+}
+
+.border.rounded {
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.border.rounded:hover {
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+</style>
+{% endblock %}

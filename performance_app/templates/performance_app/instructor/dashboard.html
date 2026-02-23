@@ -1,0 +1,257 @@
+{% extends 'performance_app/base.html' %}
+
+{% block title %}Dashboard - Student Performance Prediction{% endblock %}
+{% block header %}Dashboard{% endblock %}
+
+{% block content %}
+
+<!-- ================= STATS ================= -->
+<div class="row">
+
+{% if user_profile.role == 'student' %}
+
+    <!-- My Course -->
+    <div class="col-md-3">
+        <div class="stat-card bg-primary text-white">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <h5>{{ student_obj.course.course_name }}</h5>
+                    <p>My Course</p>
+                </div>
+                <i class="fas fa-book fa-3x"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- My Performance -->
+    <div class="col-md-3">
+        <div class="stat-card bg-success text-white">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <h4>
+                        {{ student_obj.predicted_performance|default:"Not Predicted"|title }}
+                    </h4>
+                    <p>My Performance</p>
+                </div>
+                <i class="fas fa-chart-line fa-3x"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Risk Status -->
+    <div class="col-md-3">
+        <div class="stat-card {% if student_obj.is_at_risk %}bg-danger{% else %}bg-info{% endif %} text-white">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <h4>
+                        {% if student_obj.is_at_risk %}
+                            At Risk
+                        {% else %}
+                            Safe
+                        {% endif %}
+                    </h4>
+                    <p>Risk Status</p>
+                </div>
+                <i class="fas fa-exclamation-triangle fa-3x"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance -->
+    <div class="col-md-3">
+        <div class="stat-card bg-warning text-white">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <h4>{{ student_obj.attendance }}%</h4>
+                    <p>Attendance</p>
+                </div>
+                <i class="fas fa-calendar-check fa-3x"></i>
+            </div>
+        </div>
+    </div>
+
+{% else %}
+
+    <!-- ===== INSTRUCTOR / ADMIN DASHBOARD (YOUR ORIGINAL) ===== -->
+
+    <div class="col-md-3">
+        <div class="stat-card bg-primary text-white">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <h3>{{ total_courses }}</h3>
+                    <p>Total Courses</p>
+                </div>
+                <i class="fas fa-book fa-3x"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="stat-card bg-success text-white">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <h3>{{ total_students }}</h3>
+                    <p>Total Students</p>
+                </div>
+                <i class="fas fa-users fa-3x"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="stat-card bg-warning text-white">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <h3>{{ at_risk_students }}</h3>
+                    <p>At Risk Students</p>
+                </div>
+                <i class="fas fa-exclamation-triangle fa-3x"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="stat-card bg-info text-white">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <h3>{{ user_profile.role|title }}</h3>
+                    <p>Your Role</p>
+                </div>
+                <i class="fas fa-user fa-3x"></i>
+            </div>
+        </div>
+    </div>
+
+{% endif %}
+</div>
+
+<!-- ================= QUICK ACTIONS ================= -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+
+                {% if user_profile.role == 'student' %}
+
+                    {% if student_obj %}
+                    <div class="col-md-4 mb-3">
+                        <a href="{% url 'student_detail' student_obj.student_id %}"
+                           class="btn btn-primary btn-lg w-100">
+                            <i class="fas fa-user-graduate fa-2x mb-2"></i><br>
+                            My Performance
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    <div class="col-md-4 mb-3">
+                        <a href="{% url 'student_predictions' %}"
+                           class="btn btn-success btn-lg w-100">
+                            <i class="fas fa-chart-line fa-2x mb-2"></i><br>
+                            My Predictions
+                        </a>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <a href="{% url 'visualize_data' %}"
+                           class="btn btn-warning btn-lg w-100">
+                            <i class="fas fa-chart-pie fa-2x mb-2"></i><br>
+                            My Analytics
+                        </a>
+                    </div>
+
+                {% else %}
+
+                    <div class="col-md-3 mb-3">
+                    <a href="{% url 'courses_list' %}" class="btn btn-primary btn-lg w-100">
+                        <i class="fas fa-book-open fa-2x mb-2"></i><br>
+                        Course Management
+                    </a>
+                </div>
+
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'predict_performance' %}" class="btn btn-success btn-lg w-100">
+                            <i class="fas fa-brain fa-2x mb-2"></i><br>
+                            Predict Performance
+                        </a>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'students_list' %}" class="btn btn-info btn-lg w-100">
+                            <i class="fas fa-users fa-2x mb-2"></i><br>
+                            View Students
+                        </a>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'visualize_data' %}" class="btn btn-warning btn-lg w-100">
+                            <i class="fas fa-chart-bar fa-2x mb-2"></i><br>
+                            View Charts
+                        </a>
+                    </div>
+
+                {% endif %}
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= RECENT STUDENTS (HIDE FOR STUDENTS) ================= -->
+{% if user_profile.role != 'student' %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Recent Students</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Student ID</th>
+                                <th>Name</th>
+                                <th>Course</th>
+                                <th>Attendance</th>
+                                <th>Assignment</th>
+                                <th>Performance</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in recent_students %}
+                            <tr>
+                                <td>{{ student.student_id }}</td>
+                                <td>{{ student.first_name }} {{ student.last_name }}</td>
+                                <td>{{ student.course.course_name }}</td>
+                                <td>{{ student.attendance }}%</td>
+                                <td>{{ student.assignment_score }}%</td>
+                                <td>{{ student.predicted_performance|default:"Not Predicted"|title }}</td>
+                                <td>
+                                    {% if student.is_at_risk %}
+                                        <span class="badge bg-danger">At Risk</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Safe</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center">No students found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

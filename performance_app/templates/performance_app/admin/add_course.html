@@ -1,0 +1,342 @@
+{% extends 'performance_app/base.html' %}
+
+{% block title %}Add Course - Student Performance Prediction{% endblock %}
+{% block header %}Create New Course{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+
+        <!-- Main Form Card -->
+        <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+            <!-- Card Header with Decoration -->
+            <div class="card-header bg-gradient-primary text-white border-0 py-4" 
+                 style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle bg-white bg-opacity-25 p-3 me-3">
+                        <i class="fas fa-plus-circle fa-2x text-white"></i>
+                    </div>
+                    <div>
+                        <h4 class="mb-1 fw-bold">Create New Course</h4>
+                        <p class="mb-0 opacity-75 small">Fill in the details below to create a new course</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card Body -->
+            <div class="card-body p-5">
+                <form method="post" id="courseForm">
+                    {% csrf_token %}
+                    
+                    <!-- Course Code and Name Row -->
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="text" 
+                                       name="{{ form.course_id.name }}" 
+                                       id="{{ form.course_id.id_for_label }}"
+                                       class="form-control {% if form.course_id.errors %}is-invalid{% endif %}"
+                                       placeholder="CS101"
+                                       value="{{ form.course_id.value|default:'' }}"
+                                       required>
+                                <label for="{{ form.course_id.id_for_label }}">
+                                    <i class="fas fa-hashtag me-2 text-primary"></i>Course Code
+                                </label>
+                                {% if form.course_id.errors %}
+                                    <div class="invalid-feedback">
+                                        {{ form.course_id.errors|join:", " }}
+                                    </div>
+                                {% endif %}
+                                <small class="text-muted mt-1 d-block">
+                                    <i class="fas fa-info-circle me-1"></i>e.g., CS101, MATH202
+                                </small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="text" 
+                                       name="{{ form.course_name.name }}" 
+                                       id="{{ form.course_name.id_for_label }}"
+                                       class="form-control {% if form.course_name.errors %}is-invalid{% endif %}"
+                                       placeholder="Introduction to Computer Science"
+                                       value="{{ form.course_name.value|default:'' }}"
+                                       required>
+                                <label for="{{ form.course_name.id_for_label }}">
+                                    <i class="fas fa-book me-2 text-primary"></i>Course Name
+                                </label>
+                                {% if form.course_name.errors %}
+                                    <div class="invalid-feedback">
+                                        {{ form.course_name.errors|join:", " }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Description Field -->
+                    <div class="mb-4">
+                        <div class="form-floating">
+                            <textarea name="{{ form.description.name }}" 
+                                      id="{{ form.description.id_for_label }}"
+                                      class="form-control {% if form.description.errors %}is-invalid{% endif %}"
+                                      placeholder="Course description"
+                                      style="height: 120px; resize: vertical;"
+                                      required>{{ form.description.value|default:'' }}</textarea>
+                            <label for="{{ form.description.id_for_label }}">
+                                <i class="fas fa-align-left me-2 text-primary"></i>Course Description
+                            </label>
+                            {% if form.description.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.description.errors|join:", " }}
+                                </div>
+                            {% endif %}
+                            <small class="text-muted mt-1 d-block">
+                                <i class="fas fa-info-circle me-1"></i>Provide a brief overview of the course content
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- Date Range Picker -->
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="date" 
+                                       name="{{ form.start_date.name }}" 
+                                       id="{{ form.start_date.id_for_label }}"
+                                       class="form-control {% if form.start_date.errors %}is-invalid{% endif %}"
+                                       value="{{ form.start_date.value|default:'' }}"
+                                       required>
+                                <label for="{{ form.start_date.id_for_label }}">
+                                    <i class="fas fa-calendar-alt me-2 text-success"></i>Start Date
+                                </label>
+                                {% if form.start_date.errors %}
+                                    <div class="invalid-feedback">
+                                        {{ form.start_date.errors|join:", " }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="date" 
+                                       name="{{ form.end_date.name }}" 
+                                       id="{{ form.end_date.id_for_label }}"
+                                       class="form-control {% if form.end_date.errors %}is-invalid{% endif %}"
+                                       value="{{ form.end_date.value|default:'' }}"
+                                       required>
+                                <label for="{{ form.end_date.id_for_label }}">
+                                    <i class="fas fa-calendar-check me-2 text-danger"></i>End Date
+                                </label>
+                                {% if form.end_date.errors %}
+                                    <div class="invalid-feedback">
+                                        {{ form.end_date.errors|join:", " }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Date Validation Alert (Hidden by default) -->
+                    <div class="alert alert-warning alert-dismissible fade show d-none" role="alert" id="dateAlert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <span id="dateAlertMessage"></span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+
+                    <!-- Course Preview Card (Optional) -->
+                    <div class="card bg-light border-0 rounded-3 mb-4">
+                        <div class="card-body">
+                            <h6 class="fw-bold mb-3">
+                                <i class="fas fa-eye me-2 text-primary"></i>Course Preview
+                            </h6>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center">
+                                        <div class="rounded-circle bg-primary bg-opacity-10 p-2 me-2">
+                                            <i class="fas fa-hashtag text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <small class="text-muted d-block">Course Code</small>
+                                            <span id="previewCode" class="fw-bold">Not set</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center">
+                                        <div class="rounded-circle bg-success bg-opacity-10 p-2 me-2">
+                                            <i class="fas fa-book text-success"></i>
+                                        </div>
+                                        <div>
+                                            <small class="text-muted d-block">Course Name</small>
+                                            <span id="previewName" class="fw-bold">Not set</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="d-flex">
+                                        <div class="rounded-circle bg-info bg-opacity-10 p-2 me-2">
+                                            <i class="fas fa-calendar text-info"></i>
+                                        </div>
+                                        <div>
+                                            <small class="text-muted d-block">Duration</small>
+                                            <span id="previewDuration" class="fw-bold">Not set</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="d-flex gap-3 justify-content-end mt-5">
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-lg px-4">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-lg px-5" id="submitBtn">
+                            <i class="fas fa-save me-2"></i>Create Course
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Live Preview and Validation -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const courseCode = document.querySelector('[name="{{ form.course_id.name }}"]');
+    const courseName = document.querySelector('[name="{{ form.course_name.name }}"]');
+    const startDate = document.querySelector('[name="{{ form.start_date.name }}"]');
+    const endDate = document.querySelector('[name="{{ form.end_date.name }}"]');
+    
+    const previewCode = document.getElementById('previewCode');
+    const previewName = document.getElementById('previewName');
+    const previewDuration = document.getElementById('previewDuration');
+    
+    const dateAlert = document.getElementById('dateAlert');
+    const dateAlertMessage = document.getElementById('dateAlertMessage');
+    
+    // Live preview updates
+    function updatePreview() {
+        previewCode.textContent = courseCode.value.trim() || 'Not set';
+        previewName.textContent = courseName.value.trim() || 'Not set';
+        
+        if (startDate.value && endDate.value) {
+            const start = new Date(startDate.value);
+            const end = new Date(endDate.value);
+            const diffTime = Math.abs(end - start);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays > 0) {
+                previewDuration.textContent = `${diffDays} days (${start.toLocaleDateString()} - ${end.toLocaleDateString()})`;
+            } else {
+                previewDuration.textContent = 'Invalid date range';
+            }
+        } else {
+            previewDuration.textContent = 'Not set';
+        }
+    }
+    
+    courseCode.addEventListener('input', updatePreview);
+    courseName.addEventListener('input', updatePreview);
+    startDate.addEventListener('change', updatePreview);
+    endDate.addEventListener('change', updatePreview);
+    
+    // Date validation
+    function validateDates() {
+        if (startDate.value && endDate.value) {
+            const start = new Date(startDate.value);
+            const end = new Date(endDate.value);
+            
+            if (end <= start) {
+                dateAlertMessage.textContent = 'End date must be after start date.';
+                dateAlert.classList.remove('d-none');
+                return false;
+            } else {
+                dateAlert.classList.add('d-none');
+                return true;
+            }
+        }
+        return true;
+    }
+    
+    startDate.addEventListener('change', validateDates);
+    endDate.addEventListener('change', validateDates);
+    
+    // Form submission validation
+    document.getElementById('courseForm').addEventListener('submit', function(e) {
+        if (!validateDates()) {
+            e.preventDefault();
+        }
+    });
+    
+    // Auto-format course code to uppercase
+    courseCode.addEventListener('input', function() {
+        this.value = this.value.toUpperCase();
+    });
+    
+    // Set minimum date to today for start date
+    const today = new Date().toISOString().split('T')[0];
+    if (startDate) {
+        startDate.min = today;
+    }
+});
+</script>
+
+<!-- Custom Styles -->
+<style>
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .form-floating > .form-control:focus ~ label,
+    .form-floating > .form-control:not(:placeholder-shown) ~ label {
+        color: #667eea;
+        opacity: 0.8;
+    }
+    
+    .form-floating > .form-control.is-invalid ~ label {
+        color: #dc3545;
+    }
+    
+    .card {
+        transition: all 0.3s ease;
+    }
+    
+    .btn {
+        transition: all 0.3s ease;
+    }
+    
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .form-floating > .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.1);
+    }
+    
+    /* Custom animation for preview card */
+    .bg-light {
+        transition: background-color 0.3s ease;
+    }
+    
+    .bg-light:hover {
+        background-color: #e9ecef !important;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .card-body {
+            padding: 1.5rem !important;
+        }
+        
+        .btn-lg {
+            padding: 0.5rem 1rem !important;
+            font-size: 1rem;
+        }
+    }
+</style>
+{% endblock %}
